@@ -201,6 +201,45 @@ question_bank = {
 
 
 
+# # History Tracking
+# if "history" not in st.session_state:
+#     st.session_state["history"] = []
+
+# # App Layout
+# st.title("Ratio and Proportion Quiz")
+# st.sidebar.header("Quiz Settings")
+# topic = st.sidebar.selectbox("Choose a topic", list(question_bank.keys()))
+# st.sidebar.write("Selected Topic:", topic)
+
+# # Quiz Logic
+# if topic:
+#     questions = random.sample(question_bank[topic], len(question_bank[topic]))
+#     score = 0
+
+#     for i, q in enumerate(questions):
+#         st.write(f"**Q{i+1}.** {q['question']}")
+#         answer = st.text_input(f"Your Answer for Question {i+1}", key=i)
+
+#         if st.button(f"Submit Answer for Q{i+1}", key=f"submit-{i}"):
+#             if answer.strip().lower() == q["answer"].strip().lower():
+#                 st.success("Correct!")
+#                 score += 1
+#             else:
+#                 st.error(f"Wrong! Correct Answer: {q['answer']}")
+
+#     # Save the score with the date
+#     st.session_state["history"].append({"date": str(datetime.date.today()), "score": score})
+
+#     st.write(f"**Your Score:** {score}/{len(questions)}")
+
+# # Display History
+# if st.sidebar.button("Show History"):
+#     st.sidebar.write("**Accuracy History**")
+#     for record in st.session_state["history"]:
+#         st.sidebar.write(f"Date: {record['date']} | Score: {record['score']}")
+
+
+
 # History Tracking
 if "history" not in st.session_state:
     st.session_state["history"] = []
@@ -208,29 +247,41 @@ if "history" not in st.session_state:
 # App Layout
 st.title("Ratio and Proportion Quiz")
 st.sidebar.header("Quiz Settings")
+
+# Quiz Settings
 topic = st.sidebar.selectbox("Choose a topic", list(question_bank.keys()))
 st.sidebar.write("Selected Topic:", topic)
 
 # Quiz Logic
 if topic:
-    questions = random.sample(question_bank[topic], len(question_bank[topic]))
+    questions = question_bank[topic]  # No shuffle
     score = 0
 
-    for i, q in enumerate(questions):
-        st.write(f"**Q{i+1}.** {q['question']}")
-        answer = st.text_input(f"Your Answer for Question {i+1}", key=i)
+    # Single Submit Button
+    with st.form("quiz_form"):
+        answers = []
+        for i, q in enumerate(questions):
+            st.write(f"**Q{i+1}.** {q['question']}")
+            answer = st.text_input(f"Your Answer for Question {i+1}", key=f"q{i}")
+            answers.append(answer)
 
-        if st.button(f"Submit Answer for Q{i+1}", key=f"submit-{i}"):
-            if answer.strip().lower() == q["answer"].strip().lower():
-                st.success("Correct!")
+        # Submit button for the form
+        submitted = st.form_submit_button("Submit Answers")
+
+    # Process the answers after submission
+    if submitted:
+        for i, q in enumerate(questions):
+            correct = q["answer"].strip().lower()
+            user_answer = answers[i].strip().lower()
+            if user_answer == correct:
+                st.success(f"**Q{i+1}. Correct!**")
                 score += 1
             else:
-                st.error(f"Wrong! Correct Answer: {q['answer']}")
+                st.error(f"**Q{i+1}. Wrong!** Correct Answer: {q['answer']}")
 
-    # Save the score with the date
-    st.session_state["history"].append({"date": str(datetime.date.today()), "score": score})
-
-    st.write(f"**Your Score:** {score}/{len(questions)}")
+        # Save the score with the date
+        st.session_state["history"].append({"date": str(datetime.date.today()), "score": score})
+        st.write(f"**Your Score:** {score}/{len(questions)}")
 
 # Display History
 if st.sidebar.button("Show History"):
